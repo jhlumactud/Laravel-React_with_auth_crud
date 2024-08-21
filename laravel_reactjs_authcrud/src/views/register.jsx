@@ -1,20 +1,35 @@
-import { Link } from 'react-router-dom';
-import { useRef } from 'react';
+import axios from "axios";
+import { useRef } from "react";
+import { Link } from "react-router-dom";
+import axiosClient from "../axiosClient";
+import { useStateContext } from "../contexts/contextprovider";
 
 export default function register(){
-    
+
     const nameRef = useRef();
     const emailRef = useRef();
     const passwordRef = useRef();
-    
-    const onSubmit = (ev) => {
-        ev.preventDefault();
-        const payload = {
-            name: nameRef.current.value,
-            email: emailRef.current.value,
-            password: passwordRef.current.value,
-        }
-        console.log(payload);
+
+    const {setUser, setToken} = useStateContext();
+
+    const onSubmit =  (ev) =>{
+            ev.preventDefault();
+            const payload = {
+                name: nameRef.current.value,
+                email: emailRef.current.value,
+                password: passwordRef.current.value,
+            }
+            console.log(payload);
+
+            axiosClient.post("/register",payload).then(({data})=>{
+                setUser(data.user);
+                setToken(data.token);
+        }).catch(err => {
+            const response = err.response;
+            if(response && response.status === 422){
+                console.log(response.data.errors);
+            }
+        });
     }
 
     return(
